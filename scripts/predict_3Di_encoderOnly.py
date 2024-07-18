@@ -130,14 +130,37 @@ def write_predictions(predictions, out_path):
         19: "Y"
     }
 
-    with open(out_path, 'w+') as out_f:
+    out_path_checked = ''
+    try:
+        if Path(out_path).parent.is_dir():
+            if int(oct(Path(out_path).parent.stat().st_mode)[5]) > 3:
+                if not Path(out_path).is_file():
+                    out_path_checked = out_path
+                else:
+                    dir_name = Path(out_path).parent
+                    base_name = Path(Path(out_path).name).stem
+                    out_path_checked = Path(dir_name, Path(base_name + '.' + str(int(time.time())) + '.3Di.fasta'))
+            else:
+                # parent directory is not writeable
+                raise PermissionError
+        else:
+            Path(out_path).parent.mkdir(parents=True)
+            out_path_checked = out_path
+    except PermissionError:
+        # cannot create or write parent dir, write to home as default
+        dir_name = Path().home()
+        base_name = Path(out_path).name
+        out_path_checked = str(Path(dir_name, base_name))
+        print("Cannot wrie to {}, writing to {} instead".format(out_path, out_path_checked))
+
+    with open(out_path_checked, 'w+') as out_f:
         out_f.write('\n'.join(
             [">{}\n{}".format(
                 seq_id, "".join(list(map(lambda yhat: ss_mapping[int(yhat)], yhats))))
              for seq_id, (yhats, _) in predictions.items()
              ]
         ))
-    print(f"Finished writing results to {out_path}")
+    print(f"Finished writing results to {out_path_checked}")
     return None
 
 
