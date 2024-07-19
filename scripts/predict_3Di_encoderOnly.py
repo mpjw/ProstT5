@@ -95,7 +95,7 @@ def read_fasta(fasta_path, split_char, id_field):
 
 
 def write_probs(predictions, out_path):
-    out_path = out_path.parent / "output_probabilities.csv"
+    out_path = out_path.parent / (Path(out_path.name).stem + "_output_probabilities.csv")
     with open(out_path, 'w+') as out_f:
         out_f.write('\n'.join(
             ["{},{}".format(seq_id, prob)
