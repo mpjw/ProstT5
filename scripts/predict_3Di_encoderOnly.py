@@ -184,7 +184,7 @@ def load_predictor(weights_link="https://github.com/mheinzinger/ProstT5/raw/main
 
 
 def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_precision, output_probs,
-                   max_residues=4000, max_seq_len=1000, max_batch=500):
+                   split_long_seqs=False, max_residues=4000, max_seq_len=1000, max_batch=500):
 
     seq_dict = dict()
     predictions = dict()
@@ -319,7 +319,7 @@ def create_arg_parser():
 
     # Required positional argument
     parser.add_argument('-i', '--input', required=True, type=str,
-                        help='A path to a fasta-formatted text file containing protein sequence(s).')
+                        help='A path to a fasta-fo rmatted text file containing protein sequence(s).')
 
     # Required positional argument
     parser.add_argument('-o', '--output', required=True, type=str,
@@ -350,6 +350,13 @@ def create_arg_parser():
     parser.add_argument('--output_probs', type=int,
                         default=1,
                         help="Whether to output probabilities/reliability. Default: 1 (output them).")
+    
+    # Optional argument
+    parser.add_argument('--split_long_seqs', type=int,
+                        default=0,
+                        help='Wether to split sequences longer than the possible attention (1000 residues,) ' +
+                        "predict splits individually and concatenate the results togehter afterwards." +
+                        'Default: 0')
 
     return parser
 
@@ -373,6 +380,7 @@ def main():
         "Running fp16 on CPU is not supported, yet")
     
     output_probs = False if int(args.output_probs) == 0 else True
+    split_long_seqs = False if int(args.split_long_seqs) == 0 else True
 
     get_embeddings(
         seq_path,
@@ -382,6 +390,7 @@ def main():
         id_field,
         half_precision,
         output_probs,
+        split_long_seqs
     )
 
 
