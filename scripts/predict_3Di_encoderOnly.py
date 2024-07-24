@@ -148,7 +148,7 @@ def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=
     # concatenate predictions of sequences which have been split during reading
     if concat_long_seqs and type(seq_splits) is dict:
         for seq_id, n_splits in seq_splits.items():
-            full_seq = ''.join([predictions.pop(seq_id + '@' + str(i)) for i in range(n_splits)])
+            full_seq = ''.join([predictions.pop(seq_id + '_' + str(i)) for i in range(n_splits)])
             predictions[seq_id] = full_seq
 
     with open(out_path, 'w+') as out_f:
