@@ -65,7 +65,8 @@ def get_T5_model(model_dir):
     return model, vocab
 
 
-def read_fasta(fasta_path, split_char, id_field):
+def read_fasta(fasta_path, split_char, id_field, 
+               split_long_seqs=False, max_seq_len=1000):
     '''
         Reads in fasta file containing multiple sequences.
         Returns dictionary of holding multiple sequences or only single 
@@ -73,10 +74,24 @@ def read_fasta(fasta_path, split_char, id_field):
     '''
 
     sequences = dict()
+    sequence_splits = dict()
     with open(fasta_path, 'r') as fasta_f:
+        uniprot_id = ''
         for line in fasta_f:
             # get uniprot ID from header and create new entry
             if line.startswith('>'):
+                if split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
+                    # remove long sequence
+                    long_seq = sequences.pop(uniprot_id)
+                    n_splits = int(len(long_seq)/max_seq_len) + 1
+                    sequence_splits[uniprot_id] = n_splits
+
+                    # split long sequence into max_seq_len size pieces
+                    for i in range(n_splits):
+                        long_split_id = uniprot_id + '@' + str(i)
+                        long_split_seq = sequences[uniprot_id][i*max_seq_len:(i+1)*max_seq_len]
+                        sequences[long_split_id] = long_split_seq
+                
                 uniprot_id = line.replace(
                     '>', '').strip().split(split_char)[id_field]
                 sequences[uniprot_id] = ''
@@ -91,7 +106,7 @@ def read_fasta(fasta_path, split_char, id_field):
                     return None
                 else:
                     sequences[uniprot_id] += s
-    return sequences
+    return sequences, sequence_splits
 
 
 def write_probs(predictions, out_path):
@@ -106,7 +121,7 @@ def write_probs(predictions, out_path):
     return None
 
 
-def write_predictions(predictions, out_path):
+def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=None):
     ss_mapping = {
         0: "A",
         1: "C",
@@ -129,6 +144,12 @@ def write_predictions(predictions, out_path):
         18: "W",
         19: "Y"
     }
+
+    # concatenate predictions of sequences which have been split during reading
+    if concat_long_seqs and type(seq_splits) is dict:
+        for seq_id, n_splits in seq_splits.items():
+            full_seq = ''.join([predictions.pop(seq_id + '@' + str(i)) for i in range(n_splits)])
+            predictions[seq_id] = full_seq
 
     with open(out_path, 'w+') as out_f:
         out_f.write('\n'.join(
@@ -190,7 +211,7 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
     predictions = dict()
 
     # Read in fasta
-    seq_dict = read_fasta(seq_path, split_char, id_field)
+    seq_dict, splits_dict = read_fasta(seq_path, split_char, id_field, split_long_seqs, max_seq_len)
     prefix = "<AA2fold>"
 
     model, vocab = get_T5_model(model_dir)
@@ -301,7 +322,7 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
         end-start, (end-start)/len(predictions), avg_length))
     print("Writing results now to disk ...")
 
-    write_predictions(predictions, out_path)
+    write_predictions(predictions, out_path, concat_long_seqs=split_long_seqs, seq_splits=splits_dict)
     if output_probs:
         write_probs(predictions, out_path)
 
