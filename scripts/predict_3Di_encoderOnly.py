@@ -92,7 +92,7 @@ def read_fasta(fasta_path, split_char, id_field,
                     # split long sequence into max_seq_len size pieces
                     for i in range(n_splits):
                         long_split_id = uniprot_id + '@' + str(i)
-                        long_split_seq = sequences[uniprot_id][i*max_seq_len:(i+1)*max_seq_len]
+                        long_split_seq = long_seq[i*max_seq_len:(i+1)*max_seq_len]
                         sequences[long_split_id] = long_split_seq
                 
                 uniprot_id = line.replace(
@@ -121,7 +121,7 @@ def read_fasta(fasta_path, split_char, id_field,
             # split long sequence into max_seq_len size pieces
             for i in range(n_splits):
                 long_split_id = uniprot_id + '@' + str(i)
-                long_split_seq = sequences[uniprot_id][i*max_seq_len:(i+1)*max_seq_len]
+                long_split_seq = long_seq[i*max_seq_len:(i+1)*max_seq_len]
                 sequences[long_split_id] = long_split_seq    
 
     print('[debug] sequence_splits:', sequence_splits)
