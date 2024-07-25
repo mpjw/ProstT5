@@ -310,7 +310,7 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
             for batch_idx, identifier in enumerate(pdb_ids):
                 s_len = seq_lens[batch_idx]
                 # slice off padding and special token appended to the end of the sequence
-                pred = predictionauto_split_long_seqs[batch_idx, :, 0:s_len].squeeze()
+                pred = prediction[batch_idx, :, 0:s_len].squeeze()
                 if output_probs:  # average over per-residue max.-probabilities
                     prob = int( 100* np.mean(probabilities[batch_idx, :, 0:s_len]))
                     predictions[identifier] = (pred, prob)
