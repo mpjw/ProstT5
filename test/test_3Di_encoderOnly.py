@@ -43,8 +43,8 @@ def setup_fasta():
     if long_3Di_file.exists():
         long_3Di_file.unlink()
 
-def test_predict_3Di_encoderOnly(setup_fasta_file):
-    fasta_files = setup_fasta_file
+def test_predict_3Di_encoderOnly(setup_fastas):
+    fasta_files = setup_fastas
     # f_short_AA, f_long_AA, f_short_3Di, f_long_3Di = *fasta_files
 
     # ProstT5 predict previously split sequences 
