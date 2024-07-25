@@ -81,6 +81,8 @@ def read_fasta(fasta_path, split_char, id_field,
             # get uniprot ID from header and create new entry
             if line.startswith('>'):
                 if split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
+                    print('[debug] splitting ' + uniprot_id + ', L=' + str(len(sequences[uniprot_id])))
+
                     # remove long sequence
                     long_seq = sequences.pop(uniprot_id)
                     n_splits = int(len(long_seq)/max_seq_len) + 1
@@ -148,6 +150,7 @@ def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=
     # concatenate predictions of sequences which have been split during reading
     if concat_long_seqs and type(seq_splits) is dict:
         for seq_id, n_splits in seq_splits.items():
+            print('[debug] concating ' + seq_id + ', expecting ' + str(n_splits) + ' splits')
             with open(out_path.parent / 'debug_splits' + str(concat_long_seqs) + '.fasta', 'w') as f_debug:
                 for i in range(n_splits):
                     f_debug.write('>' + seq_id + '@' + str(i) + '\n')
