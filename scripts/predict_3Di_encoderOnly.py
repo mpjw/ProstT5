@@ -66,7 +66,7 @@ def get_T5_model(model_dir):
 
 
 def read_fasta(fasta_path, split_char, id_field, 
-               split_long_seqs=False, max_seq_len=1000):
+               auto_split_long_seqs=False, max_seq_len=1000):
     '''
         Reads in fasta file containing multiple sequences.
         Returns dictionary of holding multiple sequences or only single 
@@ -80,7 +80,7 @@ def read_fasta(fasta_path, split_char, id_field,
         for line in fasta_f:
             # get uniprot ID from header and create new entry
             if line.startswith('>'):
-                if split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
+                if auto_split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
                     print('[debug] splitting ' + uniprot_id + ', L=' + str(len(sequences[uniprot_id])))
 
                     # remove long sequence
@@ -212,13 +212,13 @@ def load_predictor(weights_link="https://github.com/mheinzinger/ProstT5/raw/main
 
 
 def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_precision, output_probs,
-                   split_long_seqs=False, max_residues=4000, max_seq_len=1000, max_batch=500):
+                   auto_split_long_seqs=False, max_residues=4000, max_seq_len=1000, max_batch=500):
 
     seq_dict = dict()
     predictions = dict()
 
     # Read in fasta
-    seq_dict, splits_dict = read_fasta(seq_path, split_char, id_field, split_long_seqs, max_seq_len)
+    seq_dict, splits_dict = read_fasta(seq_path, split_char, id_field, auto_split_long_seqs=auto_split_long_seqs, max_seq_len=max_seq_len)
     prefix = "<AA2fold>"
 
     model, vocab = get_T5_model(model_dir)
@@ -288,7 +288,7 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
             for idx, s_len in enumerate(seq_lens):
                 token_encoding.attention_mask[idx, s_len+1] = 0
 
-            # extract last hidden states (=embeddings)
+            # extract last hiddenauto_split_long_seqs states (=embeddings)
             residue_embedding = embedding_repr.last_hidden_state.detach()
             # mask out padded elements in the attention output (can be non-zero) for further processing/prediction
             residue_embedding = residue_embedding * \
@@ -310,7 +310,7 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
             for batch_idx, identifier in enumerate(pdb_ids):
                 s_len = seq_lens[batch_idx]
                 # slice off padding and special token appended to the end of the sequence
-                pred = prediction[batch_idx, :, 0:s_len].squeeze()
+                pred = predictionauto_split_long_seqs[batch_idx, :, 0:s_len].squeeze()
                 if output_probs:  # average over per-residue max.-probabilities
                     prob = int( 100* np.mean(probabilities[batch_idx, :, 0:s_len]))
                     predictions[identifier] = (pred, prob)
@@ -329,7 +329,7 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
         end-start, (end-start)/len(predictions), avg_length))
     print("Writing results now to disk ...")
 
-    write_predictions(predictions, out_path, concat_long_seqs=split_long_seqs, seq_splits=splits_dict)
+    write_predictions(predictions, out_path, concat_long_seqs=auto_split_long_seqs, seq_splits=splits_dict)
     if output_probs:
         write_probs(predictions, out_path)
 
@@ -418,7 +418,7 @@ def main():
         id_field,
         half_precision,
         output_probs,
-        split_long_seqs
+        auto_split_long_seqs=split_long_seqs
     )
 
 
