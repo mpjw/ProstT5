@@ -75,4 +75,12 @@ def test_predict_3Di_encoderOnly(setup_fastas):
     long_3Di_record = list(SeqIO.parse(fasta_files[3], "fasta"))[0]
 
     assert sum([len(r) for r in short_3Di_records]) == len(long_3Di_record), "3Di sequences did not match in length"
-    assert ''.join([str(r.seq) for r in short_3Di_records]) == str(long_3Di_record.seq), '3Di sequences did not match in sequence identity'
+    
+    print(str(long_3Di_record.seq))
+    for rec in short_3Di_records:
+        print(str(rec.seq))
+    
+    # compute sequence identity
+    short_3Di_concat = ''.join([str(r.seq) for r in short_3Di_records])
+    print("Sequence identity: {}".format(sum([str(long_3Di_record.seq)[i] == short_3Di_concat[i] for i in range(len(short_3Di_concat))]/len(short_3Di_concat))))
+    assert short_3Di_concat == str(long_3Di_record.seq), '3Di sequences did not match in sequence identity'
