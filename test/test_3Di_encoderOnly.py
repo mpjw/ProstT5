@@ -36,12 +36,12 @@ def setup_fastas():
     yield short_AA_file, long_AA_file, short_3Di_file, long_3Di_file
 
     # clean up
-    short_AA_file.unlink()
-    long_AA_file.unlink()
-    if short_3Di_file.exists():
-        short_3Di_file.unlink()
-    if long_3Di_file.exists():
-        long_3Di_file.unlink()
+    #short_AA_file.unlink()
+    #long_AA_file.unlink()
+    #if short_3Di_file.exists():
+    #    short_3Di_file.unlink()
+    #if long_3Di_file.exists():
+    #    long_3Di_file.unlink()
 
 def test_predict_3Di_encoderOnly(setup_fastas):
     fasta_files = setup_fastas
