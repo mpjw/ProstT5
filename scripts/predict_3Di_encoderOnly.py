@@ -169,8 +169,8 @@ def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=
     if concat_long_seqs and type(seq_splits) is dict:
         for seq_id, n_splits in seq_splits.items():
             print('[debug] concating ' + seq_id + ', expecting ' + str(n_splits) + ' splits')
-            split_yhats = [predictions.pop(seq_id + '@' + str(i))[1][0] for i in range(n_splits)]
-            split_yhats = [yhat for subseq_yhats in split_yhats for yhat in subseq_yhats]
+            split_predictions = [predictions.pop(seq_id + '@' + str(i)) for i in range(n_splits)]
+            split_yhats = [yhat for _, (subseq_yhats, _) in split_predictions for yhat in subseq_yhats]
             full_seq = ''.join(map(lambda yhat: ss_mapping[int(yhat)], split_yhats))
             predictions[seq_id] = full_seq
             with open(out_path.parent / ('debug_splits' + str(concat_long_seqs) + '.fasta'), 'w') as f_debug:
