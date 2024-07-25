@@ -49,7 +49,7 @@ def test_predict_3Di_encoderOnly(setup_fastas):
 
     # ProstT5 predict previously split sequences 
     command = [
-        'python', 'predict_3Di_encoderOnly.py',
+        'python', 'scripts/predict_3Di_encoderOnly.py',
         '--fasta', fasta_files[0],
         '--output', fasta_files[2],
         '--half', '1'
@@ -59,7 +59,7 @@ def test_predict_3Di_encoderOnly(setup_fastas):
     
     # ProstT5 predict long sequence with auto splitting
     command = [
-        'python', 'predict_3Di_encoderOnly.py',
+        'python', 'scripts/predict_3Di_encoderOnly.py',
         '--fasta', fasta_files[1],
         '--output', fasta_files[3],
         '--half', '1'
