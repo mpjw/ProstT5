@@ -52,6 +52,7 @@ def test_predict_3Di_encoderOnly(setup_fasta_file):
         'python', 'predict_3Di_encoderOnly.py',
         '--fasta', fasta_files[0],
         '--output', fasta_files[2],
+        '--half', '1'
         '--model', '/home/mpjw/eggNOG-3Di/data/prostt5/model/'
     ]
     result = subprocess.run(command, capture_output=True, text=True)
@@ -61,6 +62,7 @@ def test_predict_3Di_encoderOnly(setup_fasta_file):
         'python', 'predict_3Di_encoderOnly.py',
         '--fasta', fasta_files[1],
         '--output', fasta_files[3],
+        '--half', '1'
         '--model', '/home/mpjw/eggNOG-3Di/data/prostt5/model/',
         '--split_long_seqs', '1'
     ]
