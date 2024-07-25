@@ -34,7 +34,7 @@ def setup_fastas():
     with open(long_AA_file, 'w') as out_file_long:
         #SeqIO.write(long_fasta_record, out_file_long, 'fasta')
         out_file_long.write('>test_seq\n')
-        out_file_short.write(long_seq + '\n')
+        out_file_long.write(long_seq + '\n')
 
 
 
