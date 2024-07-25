@@ -12,8 +12,6 @@ def setup_fastas():
     max_seq_len = 1000
     short_seqs = [long_seq[i*max_seq_len:(i+1)*max_seq_len] for i in range(int(len(long_seq)/max_seq_len) + 1)]
     short_seq_ids = ['test_seq_' + str(i) for i in range(len(short_seqs))]
-    #short_fasta_records = [SeqRecord(Seq(t_seq[i]), t_id[i]) for i in range(len(t_seq))]
-    #long_fasta_record = SeqRecord(Seq(long_sequence), 'test_seq')
     
     test_dir = Path('test')
     if not test_dir.exists():
@@ -42,12 +40,12 @@ def setup_fastas():
     yield short_AA_file, long_AA_file, short_3Di_file, long_3Di_file
 
     # clean up
-    #short_AA_file.unlink()
-    #long_AA_file.unlink()
-    #if short_3Di_file.exists():
-    #    short_3Di_file.unlink()
-    #if long_3Di_file.exists():
-    #    long_3Di_file.unlink()
+    short_AA_file.unlink()
+    long_AA_file.unlink()
+    if short_3Di_file.exists():
+        short_3Di_file.unlink()
+    if long_3Di_file.exists():
+        long_3Di_file.unlink()
 
 def test_predict_3Di_encoderOnly(setup_fastas):
     fasta_files = setup_fastas
@@ -81,11 +79,6 @@ def test_predict_3Di_encoderOnly(setup_fastas):
     long_3Di_record = list(SeqIO.parse(fasta_files[3], "fasta"))[0]
 
     assert sum([len(r) for r in short_3Di_records]) == len(long_3Di_record), "3Di sequences did not match in length"
-    
-    print('Final output of sequences:')
-    print(str(long_3Di_record.seq))
-    for rec in short_3Di_records:
-        print(str(rec.seq))
     
     # compute sequence identity
     short_3Di_concat = ''.join([str(r.seq) for r in short_3Di_records])
