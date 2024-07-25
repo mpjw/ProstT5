@@ -172,9 +172,10 @@ def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=
             # TODO: debug
             split_predictions = [predictions.pop(seq_id + '@' + str(i)) for i in range(n_splits)]
             print(split_predictions)
-            split_yhats = [yhat for _, (subseq_yhats, _) in split_predictions for yhat in subseq_yhats]
+            split_yhats = [yhat for (subseq_yhats, _) in split_predictions for yhat in subseq_yhats]
+            split_unkown = int(sum([subseq_prediction[1] for subseq_prediction in split_predictions])/len(split_predictions))
             full_seq = ''.join(map(lambda yhat: ss_mapping[int(yhat)], split_yhats))
-            predictions[seq_id] = full_seq
+            predictions[seq_id] = (split_yhats, split_unkown)
             with open(out_path.parent / ('debug_splits' + str(concat_long_seqs) + '.fasta'), 'w') as f_debug:
                 for i in range(n_splits):
                     f_debug.write('>' + seq_id + '@' + str(i) + '\n')
