@@ -75,15 +75,12 @@ def read_fasta(fasta_path, split_char, id_field,
 
     sequences = dict()
     sequence_splits = dict()
-    print('[debug]:read_fasta auto_split_long_seqs=' + str(auto_split_long_seqs))
     with open(fasta_path, 'r') as fasta_f:
         uniprot_id = ''
         for line in fasta_f:
             # get uniprot ID from header and create new entry
             if line.startswith('>'):
                 if auto_split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
-                    print('[debug] splitting ' + uniprot_id + ', L=' + str(len(sequences[uniprot_id])))
-
                     # remove long sequence
                     long_seq = sequences.pop(uniprot_id)
                     n_splits = int(len(long_seq)/max_seq_len) + 1
@@ -111,7 +108,6 @@ def read_fasta(fasta_path, split_char, id_field,
                     sequences[uniprot_id] += s
 
         if auto_split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
-            print('[debug] splitting ' + uniprot_id + ', L=' + str(len(sequences[uniprot_id])))
 
             # remove long sequence
             long_seq = sequences.pop(uniprot_id)
@@ -124,7 +120,6 @@ def read_fasta(fasta_path, split_char, id_field,
                 long_split_seq = long_seq[i*max_seq_len:(i+1)*max_seq_len]
                 sequences[long_split_id] = long_split_seq    
 
-    print('[debug] sequence_splits:', sequence_splits)
     return sequences, sequence_splits
 
 
@@ -164,22 +159,14 @@ def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=
         19: "Y"
     }
 
-    print('[debug]:write_predictions concat_long_seqs=' + str(concat_long_seqs))
     # concatenate predictions of sequences which have been split during reading
     if concat_long_seqs and type(seq_splits) is dict:
         for seq_id, n_splits in seq_splits.items():
-            print('[debug] concating ' + seq_id + ', expecting ' + str(n_splits) + ' splits')
-            # TODO: debug
             split_predictions = [predictions.pop(seq_id + '@' + str(i)) for i in range(n_splits)]
-            print(split_predictions)
             split_yhats = [yhat for (subseq_yhats, _) in split_predictions for yhat in subseq_yhats]
             split_unkown = int(sum([subseq_prediction[1] for subseq_prediction in split_predictions])/len(split_predictions))
             full_seq = ''.join(map(lambda yhat: ss_mapping[int(yhat)], split_yhats))
             predictions[seq_id] = (split_yhats, split_unkown)
-            with open(out_path.parent / ('debug_splits' + str(concat_long_seqs) + '.fasta'), 'w') as f_debug:
-                for i in range(n_splits):
-                    f_debug.write('>' + seq_id + '@' + str(i) + '\n')
-                    f_debug.write(full_seq + '\n')
 
     with open(out_path, 'w+') as out_f:
         out_f.write('\n'.join(
@@ -241,7 +228,6 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
     predictions = dict()
 
     # Read in fasta
-    print('[debug]:get_embeddings auto_split_long_seqs=' + str(auto_split_long_seqs))
     seq_dict, splits_dict = read_fasta(seq_path, split_char, id_field, auto_split_long_seqs=auto_split_long_seqs, max_seq_len=max_seq_len)
     prefix = "<AA2fold>"
 
@@ -433,8 +419,6 @@ def main():
     
     output_probs = False if int(args.output_probs) == 0 else True
     split_long_seqs = False if int(args.split_long_seqs) == 0 else True
-
-    print('[debug] splitting long sequences automatically:' + str(split_long_seqs))
 
     get_embeddings(
         seq_path,
