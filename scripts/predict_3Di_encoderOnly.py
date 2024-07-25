@@ -148,7 +148,7 @@ def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=
     # concatenate predictions of sequences which have been split during reading
     if concat_long_seqs and type(seq_splits) is dict:
         for seq_id, n_splits in seq_splits.items():
-            with open('test/debug_splits' + str(concat_long_seqs), 'w') as f_debug:
+            with open(out_path.parent / 'debug_splits' + str(concat_long_seqs) + '.fasta', 'w') as f_debug:
                 for i in range(n_splits):
                     f_debug.write('>' + seq_id + '@' + str(i) + '\n')
                     f_debug.write(predictions[seq_id + '@' + str(i)] + '\n')
