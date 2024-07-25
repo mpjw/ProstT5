@@ -82,6 +82,7 @@ def test_predict_3Di_encoderOnly(setup_fastas):
 
     assert sum([len(r) for r in short_3Di_records]) == len(long_3Di_record), "3Di sequences did not match in length"
     
+    print('Final output of sequences:')
     print(str(long_3Di_record.seq))
     for rec in short_3Di_records:
         print(str(rec.seq))
