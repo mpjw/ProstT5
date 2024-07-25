@@ -24,7 +24,7 @@ def setup_fastas():
     short_AA_file = test_dir / 'short_AA.fasta'
     short_3Di_file = test_dir/ short_AA_file.name.replace('_AA.fasta', '_3Di.fasta')
     long_AA_file = test_dir / 'long_AA.fasta'
-    long_3Di_file = test_dir / long_AA_file.replace('_AA.fasta', '_3Di.fasta')
+    long_3Di_file = test_dir / long_AA_file.name.replace('_AA.fasta', '_3Di.fasta')
 
     with open(short_AA_file, 'w') as out_file_short:
         SeqIO.write(short_fasta_records, out_file_short, 'fasta')
