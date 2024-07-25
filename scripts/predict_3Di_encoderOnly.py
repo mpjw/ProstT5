@@ -80,7 +80,7 @@ def read_fasta(fasta_path, split_char, id_field,
         uniprot_id = ''
         for line in fasta_f:
             # get uniprot ID from header and create new entry
-            if line.startswith('>') or line == '':
+            if line.startswith('>'):
                 if auto_split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
                     print('[debug] splitting ' + uniprot_id + ', L=' + str(len(sequences[uniprot_id])))
 
@@ -109,6 +109,21 @@ def read_fasta(fasta_path, split_char, id_field,
                     return None
                 else:
                     sequences[uniprot_id] += s
+
+        if auto_split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
+            print('[debug] splitting ' + uniprot_id + ', L=' + str(len(sequences[uniprot_id])))
+
+            # remove long sequence
+            long_seq = sequences.pop(uniprot_id)
+            n_splits = int(len(long_seq)/max_seq_len) + 1
+            sequence_splits[uniprot_id] = n_splits
+
+            # split long sequence into max_seq_len size pieces
+            for i in range(n_splits):
+                long_split_id = uniprot_id + '@' + str(i)
+                long_split_seq = sequences[uniprot_id][i*max_seq_len:(i+1)*max_seq_len]
+                sequences[long_split_id] = long_split_seq    
+
     print('[debug] sequence_splits:', sequence_splits)
     return sequences, sequence_splits
 
