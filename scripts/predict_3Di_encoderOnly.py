@@ -327,10 +327,14 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
                 else:
                     predictions[identifier] = (pred, None)
 
-                print('[debug] predictions: ', predictions[identifier])
-                print('[debug] s_len:', s_len)
-                assert s_len == len(predictions[identifier][0]), print(
+                try:
+                    assert s_len == len(predictions[identifier][0]), print(
                     f"Length mismatch for {identifier}: is:{len(predictions[identifier])} vs should:{s_len}")
+                except TypeError:
+                    print('[debug] identifier: ', identifier)
+                    print('[debug] predictions: ', predictions[identifier])
+                    print('[debug] s_len:', s_len)
+
                 if len(predictions) == 1:
                     print(
                         f"Example: predicted for protein {identifier} with length {s_len}: {predictions[identifier]}")
