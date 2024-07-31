@@ -89,7 +89,7 @@ def read_fasta(fasta_path, split_char, id_field,
                     n_splits = int(len(long_seq)/max_split_len) + 1
                     overlap_len = len(long_seq) - (n_splits - 1) * max_split_len < min_overlap_len
                     if overlap_len < min_overlap_len:
-                        max_split_len = max_split_len - (min_overlap_len - overlap_len) / (n_splits - 1)
+                        max_split_len = max_split_len - int(np.ceil((min_overlap_len - overlap_len) / (n_splits - 1)))
                         n_splits = int(len(long_seq)/max_split_len) + 1
                     
                     sequence_splits[uniprot_id] = n_splits
@@ -124,7 +124,7 @@ def read_fasta(fasta_path, split_char, id_field,
             n_splits = int(len(long_seq)/max_split_len) + 1
             overlap_len = len(long_seq) - (n_splits - 1) * max_split_len < min_overlap_len
             if overlap_len < min_overlap_len:
-                max_split_len = max_split_len - (min_overlap_len - overlap_len) / (n_splits - 1)
+                max_split_len = max_split_len - int(np.ceil((min_overlap_len - overlap_len) / (n_splits - 1)))
                 n_splits = int(len(long_seq)/max_split_len) + 1
 
             sequence_splits[uniprot_id] = n_splits
