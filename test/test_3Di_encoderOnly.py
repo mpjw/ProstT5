@@ -96,7 +96,7 @@ def test_predict_3Di_encoderOnly(setup_fastas):
     assert result.returncode == 0, "Script failed with error: {}".format(result.stderr)
 
     short_3Di_records = list(SeqIO.parse(fasta_files[2], "fasta"))
-    long_3Di_records = list(SeqIO.parse(fasta_files[3], "fasta"))[0]
+    long_3Di_records = list(SeqIO.parse(fasta_files[3], "fasta"))
 
     # get pairs of sequences for concatenated short sequences corresponding to a long sequence
     short_long_pairs = [
