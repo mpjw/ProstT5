@@ -13,7 +13,7 @@ def setup_fastas():
 
     test_seqs_long = [
         # ("test_seq_A", ""),
-        ("test_seq_B", long_seq[:10]),
+        ("test_seq_B", long_seq[:42]),
         ("test_seq_C", long_seq[max_seq_len : int(2.5 * max_seq_len)]),
         ("test_seq_D", long_seq[: (max_seq_len + 1)]),
         ("test_seq_E", long_seq),
@@ -73,6 +73,8 @@ def test_predict_3Di_encoderOnly(setup_fastas):
         "1",
         "--model",
         "/home/mpjw/eggNOG-3Di/data/prostt5/model/",
+        "--output_probs",
+        "0"
     ]
     result = subprocess.run(command, capture_output=True, text=True)
 
@@ -90,6 +92,8 @@ def test_predict_3Di_encoderOnly(setup_fastas):
         "/home/mpjw/eggNOG-3Di/data/prostt5/model/",
         "--split_long_seqs",
         "1",
+        "--output_probs",
+        "0"
     ]
     result = subprocess.run(command, capture_output=True, text=True)
 
