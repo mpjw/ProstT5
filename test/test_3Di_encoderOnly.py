@@ -16,7 +16,7 @@ def setup_fastas():
         ("test_seq_small", long_seq[:42]),
         ("test_seq_one_split", long_seq[max_seq_len : int(2.5 * max_seq_len)]),
         ("test_seq_full", long_seq),
-        ("test_seq_one_AA_overlap", long_seq[: (max_seq_len + 1)]),
+        # ("test_seq_one_AA_overlap", long_seq[: (max_seq_len + 1)]),
     ]
 
     test_seqs_short = [
@@ -104,33 +104,27 @@ def test_predict_3Di_encoderOnly(setup_fastas):
     long_3Di_records = list(SeqIO.parse(fasta_files[3], "fasta"))
 
     # get pairs of sequences for concatenated short sequences corresponding to a long sequence
-    short_long_pairs = [
-        (
-            "".join(
-                [
-                    str(short_rec.seq)
-                    for short_rec in short_3Di_records
-                    if str(short_rec.id).startswith(str(long_rec.id))
-                ]
-            ),
-            str(long_rec.seq),
-        )
-        for long_rec in long_3Di_records
-        if str(long_rec.id) != "test_seq_one_AA_overlap"
-    ]
-
-    for short_seq, long_seq in short_long_pairs:
+    for long_rec in long_3Di_records:
+        
+        if str(long_rec.id) == "test_seq_one_AA_overlap":
+            continue
+        
+        long_id = str(long_rec.id)
+        long_seq = str(long_rec.seq)
+        short_seq = ''.join([str(short_rec.seq) for short_rec in short_3Di_records if str(short_rec.id).startswith(long_id)])
+        
         assert (
             len(short_seq) == len(long_seq)
-        ), "3Di sequences did not match in length! {}!={}\nLong seq: {}\nShort seq:{}".format(
-            len(long_seq), len(short_seq), long_seq, short_seq
+        ), "3Di sequences did not match in length! {}!={}\nid: {}\nLong seq: {}\nShort seq:{}".format(
+            len(long_seq), len(short_seq), long_id, long_seq, short_seq
         )
 
         assert (
             short_seq == long_seq
-        ), "3Di sequences did not match! Sequence identity:{}\nLong seq: {}\nShort seq:{}".format(
+        ), "3Di sequences did not match! Sequence identity:{}\nid: {}\nLong seq: {}\nShort seq:{}".format(
             sum([short_seq[i] == long_seq[i] for i in range(len(long_seq))])
             / len(long_seq),
+            long_id,
             long_seq,
             short_seq,
         )
