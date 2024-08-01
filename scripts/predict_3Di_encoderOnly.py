@@ -179,13 +179,13 @@ def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=
         for seq_id, n_splits in seq_splits.items():
             split_predictions = [predictions.pop(seq_id + '@' + str(i)) for i in range(n_splits)]
             split_yhats = [yhat for (subseq_yhats, _) in split_predictions for yhat in subseq_yhats]
-            split_unkown = 0
+            split_propability = 0
             try: 
-                split_unkown = int(sum([subseq_prediction[1] for subseq_prediction in split_predictions])/len(split_predictions))
+                split_propability = int(sum([subseq_prediction[1] for subseq_prediction in split_predictions])/len(split_predictions))
             except TypeError:
                 print('[debug]', split_predictions)
             # full_seq = ''.join(map(lambda yhat: ss_mapping[int(yhat)], split_yhats))
-            predictions[seq_id] = (split_yhats, split_unkown)
+            predictions[seq_id] = (split_yhats, split_propability)
 
     with open(out_path, 'w+') as out_f:
         out_f.write('\n'.join(
@@ -346,14 +346,8 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
                 else:
                     predictions[identifier] = (pred, None)
 
-                try:
-                    assert s_len == len(predictions[identifier][0]), print(
-                    f"Length mismatch for {identifier}: is:{len(predictions[identifier])} vs should:{s_len}")
-                except TypeError:
-                    # TODO: remove debug code
-                    print('[debug] identifier: ', identifier)
-                    print('[debug] predictions: ', predictions[identifier])
-                    print('[debug] s_len:', s_len)
+                assert s_len == len(predictions[identifier][0]), print(
+                f"Length mismatch for {identifier}: is:{len(predictions[identifier])} vs should:{s_len}")
 
                 if len(predictions) == 1:
                     print(
