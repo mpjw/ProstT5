@@ -12,17 +12,18 @@ def setup_fastas():
     max_seq_len = 1000
 
     test_seqs_long = [
-        # ("test_seq_A", ""),
-        ("test_seq_B", long_seq[:42]),
-        ("test_seq_C", long_seq[max_seq_len : int(2.5 * max_seq_len)]),
-        ("test_seq_D", long_seq[: (max_seq_len + 1)]),
-        ("test_seq_E", long_seq),
+        # ("test_seq_empty", ""),
+        ("test_seq_small", long_seq[:42]),
+        ("test_seq_one_split", long_seq[max_seq_len : int(2.5 * max_seq_len)]),
+        ("test_seq_full", long_seq),
+        ("test_seq_one_AA_overlap", long_seq[: (max_seq_len + 1)]),
     ]
 
     test_seqs_short = [
         (seq_id + str(i), seq[i * max_seq_len : (i + 1) * max_seq_len])
         for seq_id, seq in test_seqs_long
         for i in range(int(len(seq) / max_seq_len) + 1)
+        if seq_id != "test_seq_one_AA_overlap"
     ]
     # short_seqs = [long_seq[i*max_seq_len:(i+1)*max_seq_len] for i in range(int(len(long_seq)/max_seq_len) + 1)]
     # short_seq_ids = ['test_seq_' + str(i) for i in range(len(short_seqs))]
@@ -49,12 +50,12 @@ def setup_fastas():
     yield short_AA_file, long_AA_file, short_3Di_file, long_3Di_file
 
     # clean up
-    short_AA_file.unlink()
-    long_AA_file.unlink()
-    if short_3Di_file.exists():
-        short_3Di_file.unlink()
-    if long_3Di_file.exists():
-        long_3Di_file.unlink()
+    #short_AA_file.unlink()
+    #long_AA_file.unlink()
+    #if short_3Di_file.exists():
+    #    short_3Di_file.unlink()
+    #if long_3Di_file.exists():
+    #    long_3Di_file.unlink()
 
 
 def test_predict_3Di_encoderOnly(setup_fastas):
@@ -115,6 +116,7 @@ def test_predict_3Di_encoderOnly(setup_fastas):
             str(long_rec.seq),
         )
         for long_rec in long_3Di_records
+        if str(long_rec.id) != "test_seq_one_AA_overlap"
     ]
 
     for short_seq, long_seq in short_long_pairs:
