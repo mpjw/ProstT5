@@ -86,11 +86,11 @@ def read_fasta(fasta_path, split_char, id_field,
 
                     # avoid short splits e.g. overlap of length 1 causes multiple errors; small overlap bad for attention
                     max_split_len = max_seq_len
-                    n_splits = int(len(long_seq)/max_split_len) + 1
+                    n_splits = int(len(long_seq) / max_split_len) + 1
                     overlap_len = len(long_seq) - (n_splits - 1) * max_split_len < min_overlap_len
                     if overlap_len < min_overlap_len:
                         max_split_len = max_split_len - int(np.ceil((min_overlap_len - overlap_len) / (n_splits - 1)))
-                        n_splits = int(len(long_seq)/max_split_len) + 1
+                        n_splits = int(len(long_seq) / max_split_len) + 1
                     
                     sequence_splits[uniprot_id] = n_splits
 
@@ -179,8 +179,12 @@ def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=
         for seq_id, n_splits in seq_splits.items():
             split_predictions = [predictions.pop(seq_id + '@' + str(i)) for i in range(n_splits)]
             split_yhats = [yhat for (subseq_yhats, _) in split_predictions for yhat in subseq_yhats]
-            split_unkown = int(sum([subseq_prediction[1] for subseq_prediction in split_predictions])/len(split_predictions))
-            full_seq = ''.join(map(lambda yhat: ss_mapping[int(yhat)], split_yhats))
+            split_unkown = 0
+            try: 
+                split_unkown = int(sum([subseq_prediction[1] for subseq_prediction in split_predictions])/len(split_predictions))
+            except TypeError:
+                print('[debug]', split_predictions)
+            # full_seq = ''.join(map(lambda yhat: ss_mapping[int(yhat)], split_yhats))
             predictions[seq_id] = (split_yhats, split_unkown)
 
     with open(out_path, 'w+') as out_f:
@@ -237,7 +241,7 @@ def load_predictor(weights_link="https://github.com/mheinzinger/ProstT5/raw/main
 
 
 def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_precision, output_probs,
-                   auto_split_long_seqs=False, max_residues=4000, max_seq_len=1000, max_batch=500):
+                   auto_split_long_seqs=False, max_residues=1, max_seq_len=1000, max_batch=1):
 
     seq_dict = dict()
     predictions = dict()
@@ -346,6 +350,7 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
                     assert s_len == len(predictions[identifier][0]), print(
                     f"Length mismatch for {identifier}: is:{len(predictions[identifier])} vs should:{s_len}")
                 except TypeError:
+                    # TODO: remove debug code
                     print('[debug] identifier: ', identifier)
                     print('[debug] predictions: ', predictions[identifier])
                     print('[debug] s_len:', s_len)
