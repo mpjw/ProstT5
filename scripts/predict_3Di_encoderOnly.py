@@ -413,9 +413,11 @@ def create_arg_parser():
     # Optional argument
     parser.add_argument('--split_long_seqs', type=int,
                         default=0,
-                        help='Wether to split sequences longer than the possible attention (1000 residues,) ' +
-                        "predict splits individually and concatenate the results togehter afterwards." +
-                        'Default: 0')
+                        help="Controls internal splitting of sequences which are too long for " +
+                        "current attention (max 6000 residues). A value below 100 will result " +
+                        "in default behaviour (ignore too long sequence). Splitting is done " +
+                        "at read time and predicted splits will be concatenated during writing." +
+                        "Default: 0 (no splitting)")
 
     return parser
 
@@ -439,7 +441,7 @@ def main():
         "Running fp16 on CPU is not supported, yet")
     
     output_probs = False if int(args.output_probs) == 0 else True
-    split_long_seqs = False if int(args.split_long_seqs) == 0 else True
+    split_long_seqs = False if int(args.split_long_seqs) < 100 else True
 
     get_embeddings(
         seq_path,
