@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 Testing splitting function in predict_3Di_encoderOnly.py by manually creating and predicting expected splits and comparing results.
+ProstT5 predictions are very sensitive to split lenght with changes in sequence identity of results occuring at 0.001 deviation in split length.
+Thus, the pytest for sequence identity will only work if the test splits are of exactly the same length as computed during ProstT5 prediction.
+
 
 @author: mpjwagner
 """
