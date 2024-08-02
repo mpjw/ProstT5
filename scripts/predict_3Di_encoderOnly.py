@@ -66,7 +66,7 @@ def get_T5_model(model_dir):
 
 
 def read_fasta(fasta_path, split_char, id_field, 
-               auto_split_long_seqs=False, max_seq_len=1000, min_overlap_len=200):
+               auto_split_long_seqs=False, max_seq_len=1000, min_split_len=2):
     '''
         Reads in fasta file containing multiple sequences.
         Returns dictionary of holding multiple sequences or only single 
@@ -85,19 +85,19 @@ def read_fasta(fasta_path, split_char, id_field,
                     long_seq = sequences.pop(uniprot_id)
 
                     # avoid short splits e.g. overlap of length 1 causes multiple errors; small overlap bad for attention
-                    max_split_len = max_seq_len
-                    n_splits = int(len(long_seq) / max_split_len) + 1
-                    overlap_len = len(long_seq) - (n_splits - 1) * max_split_len < min_overlap_len
-                    if overlap_len < min_overlap_len:
-                        max_split_len = max_split_len - int(np.ceil((min_overlap_len - overlap_len) / (n_splits - 1)))
-                        n_splits = int(len(long_seq) / max_split_len) + 1
+                    split_len = max_seq_len
+                    n_splits = int(len(long_seq) / split_len) + 1
+                    overlap_len = len(long_seq) - (n_splits - 1) * split_len < min_split_len
+                    if overlap_len < min_split_len:
+                        split_len = split_len - int(np.ceil((min_split_len - overlap_len) / (n_splits - 1)))
+                        n_splits = int(len(long_seq) / split_len) + 1
                     
                     sequence_splits[uniprot_id] = n_splits
 
-                    # split long sequence into max_seq_len size pieces
+                    # split long sequence into split_len size pieces
                     for i in range(n_splits):
                         long_split_id = uniprot_id + '@' + str(i)
-                        long_split_seq = long_seq[i*max_split_len:(i+1)*max_split_len]
+                        long_split_seq = long_seq[i*split_len:(i+1)*split_len]
                         sequences[long_split_id] = long_split_seq
                 
                 uniprot_id = line.replace(
@@ -120,19 +120,19 @@ def read_fasta(fasta_path, split_char, id_field,
             # remove long sequence
             long_seq = sequences.pop(uniprot_id)
 
-            max_split_len = max_seq_len
-            n_splits = int(len(long_seq)/max_split_len) + 1
-            overlap_len = len(long_seq) - (n_splits - 1) * max_split_len < min_overlap_len
-            if overlap_len < min_overlap_len:
-                max_split_len = max_split_len - int(np.ceil((min_overlap_len - overlap_len) / (n_splits - 1)))
-                n_splits = int(len(long_seq)/max_split_len) + 1
+            split_len = max_seq_len
+            n_splits = int(len(long_seq)/split_len) + 1
+            overlap_len = len(long_seq) - (n_splits - 1) * split_len < min_split_len
+            if overlap_len < min_split_len:
+                split_len = split_len - int(np.ceil((min_split_len - overlap_len) / (n_splits - 1)))
+                n_splits = int(len(long_seq)/split_len) + 1
 
             sequence_splits[uniprot_id] = n_splits
 
-            # split long sequence into max_seq_len size pieces
+            # split long sequence into split_len size pieces
             for i in range(n_splits):
                 long_split_id = uniprot_id + '@' + str(i)
-                long_split_seq = long_seq[i*max_split_len:(i+1)*max_split_len]
+                long_split_seq = long_seq[i*split_len:(i+1)*split_len]
                 sequences[long_split_id] = long_split_seq    
 
     return sequences, sequence_splits
