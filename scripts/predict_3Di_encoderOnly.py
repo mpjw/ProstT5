@@ -79,7 +79,10 @@ def read_fasta(fasta_path, split_char, id_field, max_split_length=0, min_split_l
         for line in fasta_f:
             # get uniprot ID from header and create new entry
             if line.startswith('>'):
-                if bool(max_split_length) and uniprot_id != '' and len(sequences[uniprot_id]) > max_split_length:
+                if uniprot_id != '' and len(sequences[uniprot_id]) == 0:
+                    sequences.pop(uniprot_id)
+                    print('Ignoring empty sequence for {}'.format(uniprot_id))
+                elif bool(max_split_length) and uniprot_id != '' and len(sequences[uniprot_id]) > max_split_length:
                     # remove long sequence
                     long_seq = sequences.pop(uniprot_id)
 
