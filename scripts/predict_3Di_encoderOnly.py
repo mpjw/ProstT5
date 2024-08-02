@@ -86,7 +86,7 @@ def read_fasta(fasta_path, split_char, id_field, max_split_length=0, min_split_l
                     # avoid short splits e.g. overlap of length 1 causes multiple errors; small overlap bad for attention
                     split_len = max_split_length
                     n_splits = int(len(long_seq) / split_len) + 1
-                    overlap_len = len(long_seq) - (n_splits - 1) * split_len < min_split_len
+                    overlap_len = len(long_seq) - (n_splits - 1) * split_len
                     if overlap_len < min_split_len:
                         split_len = split_len - int(np.ceil((min_split_len - overlap_len) / (n_splits - 1)))
                         n_splits = int(len(long_seq) / split_len) + 1
@@ -121,7 +121,7 @@ def read_fasta(fasta_path, split_char, id_field, max_split_length=0, min_split_l
 
             split_len = max_split_length
             n_splits = int(len(long_seq)/split_len) + 1
-            overlap_len = len(long_seq) - (n_splits - 1) * split_len < min_split_len
+            overlap_len = len(long_seq) - (n_splits - 1) * split_len
             if overlap_len < min_split_len:
                 split_len = split_len - int(np.ceil((min_split_len - overlap_len) / (n_splits - 1)))
                 n_splits = int(len(long_seq)/split_len) + 1
