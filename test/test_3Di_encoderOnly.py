@@ -94,7 +94,7 @@ def test_predict_3Di_encoderOnly(setup_fastas):
         "--model",
         "/home/mpjw/eggNOG-3Di/data/prostt5/model/",
         "--split_long_seqs",
-        "1",
+        "1000",
     ]
     result = subprocess.run(command, capture_output=True, text=True)
 
