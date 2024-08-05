@@ -194,6 +194,7 @@ def write_predictions(predictions, out_path, concat_long_seqs=False, seq_splits=
              for seq_id, (yhats, _) in predictions.items()
              ]
         ))
+        out_f.write('\n') # adding final newline
     print(f"Finished writing results to {out_path}")
     return None
 
