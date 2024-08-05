@@ -65,8 +65,7 @@ def get_T5_model(model_dir):
     return model, vocab
 
 
-def read_fasta(fasta_path, split_char, id_field, 
-               auto_split_long_seqs=False, max_seq_len=1000, min_split_len=2):
+def read_fasta(fasta_path, split_char, id_field, max_split_length=0, min_split_len=2):
     '''
         Reads in fasta file containing multiple sequences.
         Returns dictionary of holding multiple sequences or only single 
@@ -80,14 +79,17 @@ def read_fasta(fasta_path, split_char, id_field,
         for line in fasta_f:
             # get uniprot ID from header and create new entry
             if line.startswith('>'):
-                if auto_split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
+                if uniprot_id != '' and len(sequences[uniprot_id]) == 0:
+                    sequences.pop(uniprot_id)
+                    print('Ignoring empty sequence for {}'.format(uniprot_id))
+                elif bool(max_split_length) and uniprot_id != '' and len(sequences[uniprot_id]) > max_split_length:
                     # remove long sequence
                     long_seq = sequences.pop(uniprot_id)
 
                     # avoid short splits e.g. overlap of length 1 causes multiple errors; small overlap bad for attention
-                    split_len = max_seq_len
+                    split_len = max_split_length
                     n_splits = int(len(long_seq) / split_len) + 1
-                    overlap_len = len(long_seq) - (n_splits - 1) * split_len < min_split_len
+                    overlap_len = len(long_seq) - (n_splits - 1) * split_len
                     if overlap_len < min_split_len:
                         split_len = split_len - int(np.ceil((min_split_len - overlap_len) / (n_splits - 1)))
                         n_splits = int(len(long_seq) / split_len) + 1
@@ -115,14 +117,14 @@ def read_fasta(fasta_path, split_char, id_field,
                 else:
                     sequences[uniprot_id] += s
 
-        if auto_split_long_seqs and uniprot_id != '' and len(sequences[uniprot_id]) > max_seq_len:
+        if max_split_length and uniprot_id != '' and len(sequences[uniprot_id]) > max_split_length:
 
             # remove long sequence
             long_seq = sequences.pop(uniprot_id)
 
-            split_len = max_seq_len
+            split_len = max_split_length
             n_splits = int(len(long_seq)/split_len) + 1
-            overlap_len = len(long_seq) - (n_splits - 1) * split_len < min_split_len
+            overlap_len = len(long_seq) - (n_splits - 1) * split_len
             if overlap_len < min_split_len:
                 split_len = split_len - int(np.ceil((min_split_len - overlap_len) / (n_splits - 1)))
                 n_splits = int(len(long_seq)/split_len) + 1
@@ -242,13 +244,13 @@ def load_predictor(weights_link="https://github.com/mheinzinger/ProstT5/raw/main
 
 
 def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_precision, output_probs,
-                   auto_split_long_seqs=False, max_residues=1, max_seq_len=1000, max_batch=1):
+                   max_split_length=0, max_residues=4000, max_seq_len=1000, max_batch=500):
 
     seq_dict = dict()
     predictions = dict()
 
     # Read in fasta
-    seq_dict, splits_dict = read_fasta(seq_path, split_char, id_field, auto_split_long_seqs=auto_split_long_seqs, max_seq_len=max_seq_len)
+    seq_dict, splits_dict = read_fasta(seq_path, split_char, id_field, max_split_length)
     prefix = "<AA2fold>"
 
     model, vocab = get_T5_model(model_dir)
@@ -361,7 +363,7 @@ def get_embeddings(seq_path, out_path, model_dir, split_char, id_field, half_pre
         end-start, (end-start)/len(predictions), avg_length))
     print("Writing results now to disk ...")
 
-    write_predictions(predictions, out_path, concat_long_seqs=auto_split_long_seqs, seq_splits=splits_dict)
+    write_predictions(predictions, out_path, concat_long_seqs=max_split_length, seq_splits=splits_dict)
     if output_probs:
         write_probs(predictions, out_path)
 
@@ -411,7 +413,7 @@ def create_arg_parser():
                         default=1,
                         help="Whether to output probabilities/reliability. Default: 1 (output them).")
     
-    # Optional argument
+    # Optional argumentA
     parser.add_argument('--split_long_seqs', type=int,
                         default=0,
                         help="Controls internal splitting of sequences which are too long for " +
@@ -442,7 +444,15 @@ def main():
         "Running fp16 on CPU is not supported, yet")
     
     output_probs = False if int(args.output_probs) == 0 else True
-    split_long_seqs = False if int(args.split_long_seqs) < 100 else True
+
+    # TODO: tune parameters
+    MIN_SEQ_LENGTH = 100 # minimum sequence length to resonable split input sequences
+    MAX_SEQ_LENGTH = 6000 # maximum sequence lenght model can predict
+    split_long_seqs = int(args.split_long_seqs)
+    if int(args.split_long_seqs) < MIN_SEQ_LENGTH:
+        split_long_seqs = 0
+    elif split_long_seqs > MAX_SEQ_LENGTH:
+        split_long_seqs = MAX_SEQ_LENGTH
 
     get_embeddings(
         seq_path,
@@ -452,7 +462,7 @@ def main():
         id_field,
         half_precision,
         output_probs,
-        auto_split_long_seqs=split_long_seqs
+        split_long_seqs
     )
 
 
